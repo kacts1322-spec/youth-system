@@ -168,7 +168,7 @@ export default function ReportFormPage() {
           <form action={handleSubmitReport} className="space-y-6">
             <div className="grid gap-2">
               <Label className="text-gray-300">소속 셀 선택 *</Label>
-              <Select value={selectedCellId} onValueChange={setSelectedCellId} required>
+              <Select value={selectedCellId} onValueChange={(v) => setSelectedCellId(v || '')} required>
                 <SelectTrigger className="bg-[#0d0f1a] border-[#2a2d3e] text-gray-100 h-12">
                   {selectedCellId ? selectedCellName : <span className="text-slate-500">본인의 셀을 선택하세요</span>}
                 </SelectTrigger>

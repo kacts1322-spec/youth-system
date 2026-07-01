@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 
 export default function LoginPage() {
   // Next.js 15 (React 19) useActionState 사용
-  const [state, formAction, isPending] = useActionState(loginAction as any, null);
+  const [state, formAction, isPending] = useActionState(loginAction as any, { error: '' });
 
   return (
     <div className="flex min-h-screen items-center justify-center p-4">

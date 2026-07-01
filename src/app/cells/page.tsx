@@ -70,7 +70,7 @@ export default function CellsPage() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Select value={semester} onValueChange={setSemester}>
+          <Select value={semester} onValueChange={(v) => setSemester(v || '')}>
             <SelectTrigger className="w-[150px] bg-[#0d0f1a] border-[#2a2d3e] text-gray-100 font-bold">
               <SelectValue placeholder="학기 선택" />
             </SelectTrigger>
@@ -92,7 +92,7 @@ export default function CellsPage() {
         </h2>
         
         <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
-          <DialogTrigger asChild>
+          <DialogTrigger>
             <Button className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-lg shadow-cyan-500/20 hover:scale-105 transition-all">
               ➕ 새 셀 만들기
             </Button>
@@ -107,7 +107,7 @@ export default function CellsPage() {
                 </div>
                 <div className="grid gap-2">
                   <Label className="text-gray-400">셀 리더 지정</Label>
-                  <Select name="leader_id" value={selectedLeader} onValueChange={setSelectedLeader}>
+                  <Select name="leader_id" value={selectedLeader} onValueChange={(v) => setSelectedLeader(v || '')}>
                     <SelectTrigger className="bg-[#0d0f1a] border-[#2a2d3e] text-gray-100">
                       {selectedLeader === 'unassigned' ? '(리더 미정)' : (members.find(m => m.id === selectedLeader)?.name || '리더를 선택하세요')}
                     </SelectTrigger>

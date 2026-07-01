@@ -31,8 +31,8 @@ export default function MemberProfilePage({ params }: { params: Promise<{ id: st
     const res = await fetchMemberDetailsAction(id);
     if (res.success) {
       setMember(res.member);
-      setCellHistory(res.cellHistory);
-      setAttendanceHistory(res.attendanceHistory);
+      setCellHistory(res.cellHistory || []);
+      setAttendanceHistory(res.attendanceHistory || []);
     }
     
     // 심방 기록 (ADMIN 권한 체크됨)

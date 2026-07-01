@@ -56,7 +56,7 @@ export default function ReportsDashboardPage() {
       <Card className="game-card border-cyan-500/30 overflow-hidden">
         <div className="p-4 bg-[#141627] border-b border-[#2a2d3e] flex items-center gap-4">
           <span className="text-gray-300 font-bold">주차(날짜) 선택:</span>
-          <Select value={selectedDate} onValueChange={setSelectedDate}>
+          <Select value={selectedDate} onValueChange={(v) => setSelectedDate(v || '')}>
             <SelectTrigger className="w-[200px] bg-[#0d0f1a] border-[#363e60] text-cyan-400 font-bold">
               {selectedDate === 'all' ? '전체 보기' : selectedDate}
             </SelectTrigger>

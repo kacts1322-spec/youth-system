@@ -298,12 +298,12 @@ export default function MembersPage() {
       <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <h1 className="text-2xl font-extrabold text-neon-cyan">📋 명단 관리</h1>
         <div className="flex items-center gap-2">
-          <Select value={sortBy} onValueChange={setSortBy}>
+          <Select value={sortBy} onValueChange={(v) => setSortBy(v || '')}>
             <SelectTrigger className="w-[140px] bg-[#252b43] border-[#363e60] text-gray-300"><SelectValue placeholder="정렬 기준" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="name">가나다순</SelectItem>
               <SelectItem value="birth_date">생년월일순</SelectItem>
-              <SelectItem value="gender">성별순</SelectItem>
+              <SelectItem value="status">상태별</SelectItem>
             </SelectContent>
           </Select>
           <Link href="/dashboard"><Button variant="outline" size="sm" className="border-[#363e60] text-gray-400 hover:text-white hover:border-cyan-500/50">🏠 대시보드</Button></Link>
@@ -321,8 +321,8 @@ export default function MembersPage() {
             <Button variant="outline" className="border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20 hover:scale-105 transition-all" onClick={handleExportExcel}>📥 엑셀 다운</Button>
             
             <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
-              <DialogTrigger asChild>
-                <Button className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white shadow-lg shadow-cyan-500/20 hover:scale-105 transition-all">➕ 추가하기</Button>
+              <DialogTrigger>
+                <Button className="bg-gradient-to-r from-emerald-500 to-green-600 text-white shadow-lg shadow-emerald-500/20 w-full sm:w-auto h-10">➕ 추가하기</Button>
               </DialogTrigger>
               <DialogContent className="sm:max-w-[425px] game-card border-[#363e60]">
                 <form action={handleAddSubmit}>
