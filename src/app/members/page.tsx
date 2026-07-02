@@ -226,10 +226,11 @@ export default function MembersPage() {
       생년월일: m.birth_date || '',
       연락처: m.phone || '',
       소속셀: m.cell_members && m.cell_members.length > 0 ? m.cell_members[0]?.cells?.name : '',
-      상태: m.status === 'active' ? '활동' : m.status === 'away' ? '이탈' : m.status === 'warning' ? '확인' : m.status === 'long_absent' ? '장기결석' : '비활동',
+      군유학여부: m.is_away ? 'O' : 'X',
+      군유학사유: m.away_type === 'military' ? '군입대' : m.away_type === 'study' ? '유학' : m.away_type === 'other' ? '기타' : '',
+      상태: m.status === 'active' ? '활동' : m.status === 'away' ? '군/유학' : m.status === 'warning' ? '확인' : m.status === 'long_absent' ? '장기결석' : '비활동',
       원거리: m.is_distant ? 'O' : 'X',
       지역: m.distant_location || '',
-      이탈: m.is_away ? 'O' : 'X',
       비고: m.note || ''
     }));
     const ws = XLSX.utils.json_to_sheet(exportData);
@@ -368,7 +369,7 @@ export default function MembersPage() {
                 <TableHead className="w-[120px] text-center text-gray-400">상태</TableHead>
                 <TableHead className="w-[100px] text-center text-gray-400">원거리</TableHead>
                 <TableHead className="w-[120px] text-center text-gray-400">지역</TableHead>
-                <TableHead className="w-[100px] text-center text-gray-400">이탈</TableHead>
+                <TableHead className="w-[100px] text-center text-gray-400">군/유학</TableHead>
                 <TableHead className="w-[200px] text-gray-400">비고</TableHead>
               </TableRow>
             </TableHeader>
@@ -387,7 +388,7 @@ export default function MembersPage() {
                           <TableCell colSpan={10} className="p-4">
                             <div className="flex items-center justify-center gap-3 bg-[#252b43] border border-[#363e60] rounded-full py-3 px-6 max-w-md mx-auto">
                               <span className="text-xl">✈️</span>
-                              <span className="font-extrabold text-gray-400 tracking-wider text-sm">이탈 (유학/군대) 명단</span>
+                              <span className="font-extrabold text-gray-400 tracking-wider text-sm">군/유학 명단</span>
                               <span className="text-xl">✈️</span>
                             </div>
                           </TableCell>
@@ -433,7 +434,7 @@ export default function MembersPage() {
                     <TableCell className="text-center border-l border-[#363e60]">
                       {isPreviewMode ? member.status : (
                         <div className="flex justify-center items-center gap-1 h-full">
-                          <EditableCell type="select" options={[{label: '🌟 활동', value: 'active'}, {label: '💕 확인', value: 'warning'}, {label: '👻 장기결석', value: 'long_absent'}, {label: '✈️ 이탈', value: 'away'}, {label: '😴 비활동', value: 'inactive'}]} value={member.status} onSave={(val: any) => handleUpdateField(member.id, 'status', val)} />
+                          <EditableCell type="select" options={[{label: '🌟 활동', value: 'active'}, {label: '💕 확인', value: 'warning'}, {label: '👻 장기결석', value: 'long_absent'}, {label: '✈️ 군/유학', value: 'away'}, {label: '😴 비활동', value: 'inactive'}]} value={member.status} onSave={(val: any) => handleUpdateField(member.id, 'status', val)} />
                         </div>
                       )}
                     </TableCell>

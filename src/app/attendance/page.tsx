@@ -200,7 +200,7 @@ export default function AttendancePage() {
                             <TableCell colSpan={6} className="p-4">
                               <div className="flex items-center justify-center gap-3 bg-[#252b43] border border-[#363e60] rounded-full py-3 px-6 max-w-sm mx-auto">
                                 <span className="text-xl">✈️</span>
-                                <span className="font-extrabold text-gray-400 tracking-wider text-sm">이탈 (유학/군대) 명단</span>
+                                <span className="font-extrabold text-gray-400 tracking-wider text-sm">군/유학 명단</span>
                                 <span className="text-xl">✈️</span>
                               </div>
                             </TableCell>

@@ -100,7 +100,7 @@ export default function MemberProfilePage({ params }: { params: Promise<{ id: st
               <div className="flex justify-between">
                 <span className="text-gray-500">현재 상태</span>
                 <span className="font-bold text-neon-yellow">
-                  {member.status === 'active' ? '활동' : member.status === 'warning' ? '확인요망' : member.status === 'long_absent' ? '장기결석' : member.status === 'away' ? '이탈' : '비활동'}
+                  {member.status === 'active' ? '활동' : member.status === 'warning' ? '확인요망' : member.status === 'long_absent' ? '장기결석' : member.status === 'away' ? '군/유학' : '비활동'}
                 </span>
               </div>
               <div className="flex justify-between border-t border-[#363e60] pt-2 mt-2">
