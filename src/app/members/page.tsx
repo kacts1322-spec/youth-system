@@ -148,7 +148,7 @@ export default function MembersPage() {
     // 1순위: 장기결석(long_absent)과 군/유학(away)은 밑으로 분리
     const getStatusWeight = (status: string) => {
       if (status === 'away') return 3;
-      if (status === 'long_absent') return 2;
+      if (status === 'long_absent' || status === 'inactive') return 2;
       return 1;
     };
     const weightA = getStatusWeight(a.status);
@@ -167,7 +167,7 @@ export default function MembersPage() {
   });
 
   // UI에서 분리선을 긋기 위한 인덱스 찾기
-  const firstLongAbsentIndex = sortedMembers.findIndex(m => m.status === 'long_absent');
+  const firstInactiveGroupIndex = sortedMembers.findIndex(m => m.status === 'long_absent' || m.status === 'inactive');
   const firstAwayIndex = sortedMembers.findIndex(m => m.status === 'away');
 
   const handleUpdateField = async (id: string, field: string, value: any) => {
@@ -396,18 +396,18 @@ export default function MembersPage() {
                 <TableRow><TableCell colSpan={10} className="text-center py-16 text-gray-600 font-bold text-lg">🫥 아직 등록된 청년이 없어요!</TableCell></TableRow>
               ) : (
                 sortedMembers.map((member, i) => {
-                  const isLongAbsentDivider = firstLongAbsentIndex !== -1 && i === firstLongAbsentIndex;
+                  const isInactiveGroupDivider = firstInactiveGroupIndex !== -1 && i === firstInactiveGroupIndex;
                   const isAwayDivider = firstAwayIndex !== -1 && i === firstAwayIndex;
                   // 상태별 이모지 매핑
                   const statusEmoji = member.status === 'active' ? '🌟' : member.status === 'warning' ? '💕' : member.status === 'long_absent' ? '👻' : member.status === 'away' ? '✈️' : '😴';
                   return (
                     <React.Fragment key={member.id || i}>
-                      {isLongAbsentDivider && (
+                      {isInactiveGroupDivider && (
                         <TableRow className="border-0 hover:bg-transparent">
                           <TableCell colSpan={10} className="p-4">
                             <div className="flex items-center justify-center gap-3 bg-[#252b43] border border-[#363e60] rounded-full py-3 px-6 max-w-md mx-auto mt-4">
                               <span className="text-xl">👻</span>
-                              <span className="font-extrabold text-gray-400 tracking-wider text-sm">장기결석 명단</span>
+                              <span className="font-extrabold text-gray-400 tracking-wider text-sm">장기결석 및 비활동 명단</span>
                               <span className="text-xl">👻</span>
                             </div>
                           </TableCell>
