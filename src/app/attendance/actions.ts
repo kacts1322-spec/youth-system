@@ -129,25 +129,57 @@ export async function saveWeeklyAttendanceAction(
     if (updateErr) return { success: false, error: '기존 출석 기록 수정 실패: ' + updateErr.message };
   }
 
-  // --- 추가된 로직: 5주 기준 상태 자동 업데이트 ---
-  const { data: currentMembers } = await supabase.from('members').select('id, status');
-  const currentMembersMap = new Map((currentMembers || []).map(m => [m.id, m.status]));
+  // --- 추가된 로직: 전체 출석 데이터를 바탕으로 상태 자동 업데이트 ---
+  const { data: currentMembers } = await supabase.from('members').select('id, status, created_at');
   
-  const statusUpdates = [];
+  // 전체 출석 데이터를 가져와서 각 멤버의 마지막 출석일을 계산 (최신 반영된 데이터 포함)
+  const { data: allAttendances } = await supabase.from('attendance').select('member_id, service_date').eq('present', true);
   
-  for (const [memberId, checks] of Object.entries(attendanceMap)) {
-    const status = currentMembersMap.get(memberId);
-    if (status === 'away' || status === 'inactive' || status === 'long_absent') continue; // 이탈자/비활동/장기결석 예외
+  const lastAttendanceMap = new Map<string, Date>();
+  for (const att of (allAttendances || [])) {
+    const d = new Date(att.service_date);
+    const existing = lastAttendanceMap.get(att.member_id);
+    if (!existing || d > existing) {
+      lastAttendanceMap.set(att.member_id, d);
+    }
+  }
 
-    let presentCount = 0;
-    for (const date of dates) {
-      if (checks[date] === true) presentCount++;
+  const statusUpdates = [];
+  const todayDate = new Date();
+
+  for (const member of (currentMembers || [])) {
+    // 군/유학(away) 상태는 자동으로 변경하지 않음
+    if (member.status === 'away') continue;
+
+    const lastDate = lastAttendanceMap.get(member.id);
+    let newStatus = member.status;
+
+    if (!lastDate) {
+      // 출석 기록이 아예 없는 경우: 가입일 기준 계산
+      const createdDate = new Date(member.created_at);
+      const diffDays = (todayDate.getTime() - createdDate.getTime()) / (1000 * 60 * 60 * 24);
+      if (diffDays >= 365) newStatus = 'inactive';
+      else if (diffDays >= 90) newStatus = 'long_absent';
+    } else {
+      const diffDays = (todayDate.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24);
+      if (diffDays >= 365) newStatus = 'inactive';
+      else if (diffDays >= 90) newStatus = 'long_absent';
     }
 
-    if (presentCount <= 2 && status !== 'warning') {
-      statusUpdates.push({ id: memberId, status: 'warning' });
-    } else if (presentCount >= 3 && status !== 'active') {
-      statusUpdates.push({ id: memberId, status: 'active' });
+    // 3개월(90일) 이상 결석이 아니면, 최근 5주 기준으로 활동/확인 판별
+    if (newStatus !== 'inactive' && newStatus !== 'long_absent') {
+      const checks = attendanceMap[member.id] || {};
+      let presentCount = 0;
+      for (const date of dates) {
+        if (checks[date] === true) presentCount++;
+      }
+      
+      if (presentCount <= 2) newStatus = 'warning';
+      else if (presentCount >= 3) newStatus = 'active';
+    }
+
+    if (newStatus !== member.status) {
+      statusUpdates.push({ id: member.id, status: newStatus });
     }
   }
 

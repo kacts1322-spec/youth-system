@@ -177,6 +177,19 @@ export default function AttendancePage() {
                   
                   return (
                     <>
+                      <TableRow className="bg-[#2a314d] border-b-2 border-cyan-500/30">
+                        <TableCell className="text-center font-extrabold sticky left-0 bg-[#2a314d] z-10 border-r border-[#363e60] text-cyan-300">
+                          출석 인원
+                        </TableCell>
+                        {dates.map(date => {
+                          const count = members.filter(m => attendanceMap[m.id]?.[date]).length + newcomers.filter(n => n.name.trim() && n.dateCheck[date]).length;
+                          return (
+                            <TableCell key={`total-${date}`} className="text-center font-bold text-cyan-300 border-r border-[#363e60] last:border-r-0">
+                              {count}명
+                            </TableCell>
+                          );
+                        })}
+                      </TableRow>
                       {regularMembers.map((member) => {
                         // 상태별 이모지 (이름 옆에 1번만 표시)
                         const statusEmoji = member.status === 'active' ? '🌟' : member.status === 'warning' ? '💕' : member.status === 'long_absent' ? '👻' : '😴';
