@@ -157,9 +157,8 @@ export default function AttendancePage() {
                 {dates.map((d, i) => {
                   const isToday = i === dates.length - 1;
                   return (
-                    <TableHead key={d} className={`text-center font-semibold ${isToday ? 'text-neon-cyan' : 'text-gray-500'}`}>
+                    <TableHead key={d} className={`text-center font-semibold min-w-[80px] ${isToday ? 'text-neon-cyan' : 'text-gray-500'}`}>
                       {d.substring(5).replace('-', '/')}
-                      {isToday && <span className="ml-1 text-xs text-cyan-500 font-bold">(TODAY)</span>}
                     </TableHead>
                   );
                 })}
