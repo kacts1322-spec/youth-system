@@ -91,16 +91,22 @@ export default function AttendancePage() {
   const handleSaveAll = async () => {
     setSaving(true);
     toast('저장 중입니다...');
-    const res = await saveWeeklyAttendanceAction(dates, attendanceMap, newcomers);
-    if (res.success) {
-      toast.success('출석 현황이 성공적으로 저장되었습니다!');
-      // Reset newcomers after save and reload
-      setNewcomers([{ name: '', dateCheck: {} }, { name: '', dateCheck: {} }, { name: '', dateCheck: {} }]);
-      loadData(dates);
-    } else {
-      toast.error('저장 실패: ' + res.error);
+    try {
+      const res = await saveWeeklyAttendanceAction(dates, attendanceMap, newcomers);
+      if (res.success) {
+        toast.success('출석 현황이 성공적으로 저장되었습니다!');
+        // Reset newcomers after save and reload
+        setNewcomers([{ name: '', dateCheck: {} }, { name: '', dateCheck: {} }, { name: '', dateCheck: {} }]);
+        loadData(dates);
+      } else {
+        toast.error('저장 실패: ' + res.error);
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error('저장 중 서버 연결 오류가 발생했습니다. 다시 시도해주세요.');
+    } finally {
+      setSaving(false);
     }
-    setSaving(false);
   };
 
   return (

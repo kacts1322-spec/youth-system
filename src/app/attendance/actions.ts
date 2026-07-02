@@ -140,9 +140,10 @@ export async function saveWeeklyAttendanceAction(
 
   // bulk update members status
   if (statusUpdates.length > 0) {
-    for (const update of statusUpdates) {
-      await supabase.from('members').update({ status: update.status }).eq('id', update.id);
-    }
+    const updatePromises = statusUpdates.map(update => 
+      supabase.from('members').update({ status: update.status }).eq('id', update.id)
+    );
+    await Promise.all(updatePromises);
   }
 
   revalidatePath('/attendance');
