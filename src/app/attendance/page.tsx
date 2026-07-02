@@ -146,19 +146,32 @@ export default function AttendancePage() {
         </div>
       </div>
 
-      <Card className="game-card overflow-hidden">
-        <div className="overflow-x-auto w-full">
-          <Table className="min-w-[600px] text-sm">
-            <TableHeader className="bg-[#1e2235]">
+      <Card className="game-card overflow-hidden border-[#363e60]">
+        <div className="overflow-auto w-full max-h-[calc(100vh-280px)]">
+          <Table className="min-w-[600px] text-sm relative">
+            <TableHeader className="bg-[#1e2235] sticky top-0 z-20 shadow-md">
               <TableRow className="border-b border-[#363e60]">
-                <TableHead className="w-[120px] text-center font-bold sticky left-0 bg-[#1e2235] z-10 border-r border-[#363e60] text-cyan-400">
+                <TableHead className="w-[120px] text-center font-bold sticky left-0 top-0 bg-[#1e2235] z-30 border-r border-[#363e60] text-cyan-400">
                   이름
                 </TableHead>
                 {dates.map((d, i) => {
                   const isToday = i === dates.length - 1;
                   return (
-                    <TableHead key={d} className={`text-center font-semibold min-w-[80px] ${isToday ? 'text-neon-cyan' : 'text-gray-500'}`}>
+                    <TableHead key={d} className={`text-center font-semibold min-w-[80px] bg-[#1e2235] ${isToday ? 'text-neon-cyan' : 'text-gray-500'}`}>
                       {d.substring(5).replace('-', '/')}
+                    </TableHead>
+                  );
+                })}
+              </TableRow>
+              <TableRow className="bg-[#2a314d] border-b-2 border-cyan-500/30">
+                <TableHead className="text-center font-extrabold sticky left-0 bg-[#2a314d] z-30 border-r border-[#363e60] text-cyan-300">
+                  출석 인원
+                </TableHead>
+                {dates.map(date => {
+                  const count = members.filter(m => attendanceMap[m.id]?.[date]).length + newcomers.filter(n => n.name.trim() && n.dateCheck[date]).length;
+                  return (
+                    <TableHead key={`total-${date}`} className="text-center font-bold text-cyan-300 bg-[#2a314d] border-r border-[#363e60] last:border-r-0">
+                      {count}명
                     </TableHead>
                   );
                 })}
@@ -176,19 +189,6 @@ export default function AttendancePage() {
                   
                   return (
                     <>
-                      <TableRow className="bg-[#2a314d] border-b-2 border-cyan-500/30">
-                        <TableCell className="text-center font-extrabold sticky left-0 bg-[#2a314d] z-10 border-r border-[#363e60] text-cyan-300">
-                          출석 인원
-                        </TableCell>
-                        {dates.map(date => {
-                          const count = members.filter(m => attendanceMap[m.id]?.[date]).length + newcomers.filter(n => n.name.trim() && n.dateCheck[date]).length;
-                          return (
-                            <TableCell key={`total-${date}`} className="text-center font-bold text-cyan-300 border-r border-[#363e60] last:border-r-0">
-                              {count}명
-                            </TableCell>
-                          );
-                        })}
-                      </TableRow>
                       {regularMembers.map((member) => {
                         // 상태별 이모지 (이름 옆에 1번만 표시)
                         const statusEmoji = member.status === 'active' ? '🌟' : member.status === 'warning' ? '💕' : member.status === 'long_absent' ? '👻' : '😴';
