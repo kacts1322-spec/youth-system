@@ -31,7 +31,7 @@ export default async function DashboardPage() {
   const { count: totalActive } = await supabase
     .from('members')
     .select('*', { count: 'exact', head: true })
-    .neq('status', 'away');
+    .in('status', ['active', 'warning']);
 
   // 2. 4주간 출석 데이터 조회
   const sundays = getLast4Sundays();

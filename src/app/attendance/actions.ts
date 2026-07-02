@@ -124,7 +124,7 @@ export async function saveWeeklyAttendanceAction(
   
   for (const [memberId, checks] of Object.entries(attendanceMap)) {
     const status = currentMembersMap.get(memberId);
-    if (status === 'away' || status === 'inactive') continue; // 이탈자/비활동 예외
+    if (status === 'away' || status === 'inactive' || status === 'long_absent') continue; // 이탈자/비활동/장기결석 예외
 
     let presentCount = 0;
     for (const date of dates) {

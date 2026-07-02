@@ -212,7 +212,7 @@ export default function MembersPage() {
   };
 
   const handleDownloadTemplate = () => {
-    const ws = XLSX.utils.json_to_sheet([{ 이름: "홍길동", 성별: "M", 생년월일: "1999-01-01", 연락처: "010-1234-5678", 비고: "테스트" }]);
+    const ws = XLSX.utils.json_to_sheet([{ 이름: "홍길동", 성별: "M", 생년월일: "1999-01-01", 연락처: "010-1234-5678", 상태: "활동", 원거리: "X", 지역: "", 이탈: "X", 비고: "테스트" }]);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
     XLSX.writeFile(wb, "청년부_명단양식.xlsx");
@@ -225,11 +225,11 @@ export default function MembersPage() {
       성별: m.gender === 'F' ? '자매' : '형제',
       생년월일: m.birth_date || '',
       연락처: m.phone || '',
-      원거리여부: m.is_distant ? 'O' : 'X',
-      원거리지역: m.distant_location || '',
-      이탈여부: m.is_away ? 'O' : 'X',
-      이탈사유: m.away_type === 'military' ? '군입대' : m.away_type === 'study' ? '유학' : m.away_type === 'other' ? '기타' : '',
-      상태: m.status === 'active' ? '활동' : m.status === 'away' ? '이탈' : m.status === 'warning' ? '확인' : '비활동',
+      소속셀: m.cell_members && m.cell_members.length > 0 ? m.cell_members[0]?.cells?.name : '',
+      상태: m.status === 'active' ? '활동' : m.status === 'away' ? '이탈' : m.status === 'warning' ? '확인' : m.status === 'long_absent' ? '장기결석' : '비활동',
+      원거리: m.is_distant ? 'O' : 'X',
+      지역: m.distant_location || '',
+      이탈: m.is_away ? 'O' : 'X',
       비고: m.note || ''
     }));
     const ws = XLSX.utils.json_to_sheet(exportData);
@@ -364,11 +364,11 @@ export default function MembersPage() {
                 <TableHead className="w-[80px] text-center text-gray-400">성별</TableHead>
                 <TableHead className="w-[120px] text-center text-gray-400">생년월일</TableHead>
                 <TableHead className="w-[140px] text-center text-gray-400">연락처</TableHead>
+                <TableHead className="w-[120px] text-center text-gray-400">소속셀</TableHead>
+                <TableHead className="w-[120px] text-center text-gray-400">상태</TableHead>
                 <TableHead className="w-[100px] text-center text-gray-400">원거리</TableHead>
                 <TableHead className="w-[120px] text-center text-gray-400">지역</TableHead>
                 <TableHead className="w-[100px] text-center text-gray-400">이탈</TableHead>
-                <TableHead className="w-[120px] text-center text-gray-400">상태</TableHead>
-                <TableHead className="w-[120px] text-center text-gray-400">소속 셀</TableHead>
                 <TableHead className="w-[200px] text-gray-400">비고</TableHead>
               </TableRow>
             </TableHeader>
@@ -379,7 +379,7 @@ export default function MembersPage() {
                 sortedMembers.map((member, i) => {
                   const isAwayDivider = firstAwayIndex !== -1 && i === firstAwayIndex;
                   // 상태별 이모지 매핑
-                  const statusEmoji = member.status === 'active' ? '🌟' : member.status === 'warning' ? '💕' : member.status === 'away' ? '✈️' : '😴';
+                  const statusEmoji = member.status === 'active' ? '🌟' : member.status === 'warning' ? '💕' : member.status === 'long_absent' ? '👻' : member.status === 'away' ? '✈️' : '😴';
                   return (
                     <React.Fragment key={member.id || i}>
                       {isAwayDivider && (
@@ -419,6 +419,24 @@ export default function MembersPage() {
                         <EditableCell value={member.phone} onSave={(val: any) => handleUpdateField(member.id, 'phone', val)} placeholder="-" />
                       )}
                     </TableCell>
+                    <TableCell className="text-center border-l border-[#363e60]">
+                      {(() => {
+                        const cellName = member.cell_members && member.cell_members.length > 0 ? member.cell_members[0]?.cells?.name : null;
+                        const colorClass = getCellColor(cellName);
+                        return (
+                          <span className={`px-2 py-1 rounded font-bold text-xs border ${colorClass} transition-colors whitespace-nowrap`}>
+                            {cellName || '-'}
+                          </span>
+                        );
+                      })()}
+                    </TableCell>
+                    <TableCell className="text-center border-l border-[#363e60]">
+                      {isPreviewMode ? member.status : (
+                        <div className="flex justify-center items-center gap-1 h-full">
+                          <EditableCell type="select" options={[{label: '🌟 활동', value: 'active'}, {label: '💕 확인', value: 'warning'}, {label: '👻 장기결석', value: 'long_absent'}, {label: '✈️ 이탈', value: 'away'}, {label: '😴 비활동', value: 'inactive'}]} value={member.status} onSave={(val: any) => handleUpdateField(member.id, 'status', val)} />
+                        </div>
+                      )}
+                    </TableCell>
                     <TableCell className="text-center">
                       {isPreviewMode ? (member.is_distant ? 'Y' : 'N') : (
                         <Switch checked={member.is_distant} onCheckedChange={() => handleToggleSwitch(member.id, 'is_distant', member.is_distant)} />
@@ -436,24 +454,6 @@ export default function MembersPage() {
                           handleUpdateField(member.id, 'status', checked ? 'away' : 'active');
                         }} />
                       )}
-                    </TableCell>
-                    <TableCell className="text-center border-l border-[#363e60]">
-                      {isPreviewMode ? member.status : (
-                        <div className="flex justify-center items-center gap-1 h-full">
-                          <EditableCell type="select" options={[{label: '🌟 활동', value: 'active'}, {label: '💕 확인', value: 'warning'}, {label: '✈️ 이탈', value: 'away'}, {label: '😴 비활동', value: 'inactive'}]} value={member.status} onSave={(val: any) => handleUpdateField(member.id, 'status', val)} />
-                        </div>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-center border-l border-[#363e60]">
-                      {(() => {
-                        const cellName = member.cell_members && member.cell_members.length > 0 ? member.cell_members[0]?.cells?.name : null;
-                        const colorClass = getCellColor(cellName);
-                        return (
-                          <span className={`px-2 py-1 rounded font-bold text-xs border ${colorClass} transition-colors whitespace-nowrap`}>
-                            {cellName || '-'}
-                          </span>
-                        );
-                      })()}
                     </TableCell>
                     <TableCell className="border-l border-[#363e60]">
                       {isPreviewMode ? member.note : (

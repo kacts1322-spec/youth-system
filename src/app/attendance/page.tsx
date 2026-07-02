@@ -173,7 +173,7 @@ export default function AttendancePage() {
                     <>
                       {regularMembers.map((member) => {
                         // 상태별 이모지 (이름 옆에 1번만 표시)
-                        const statusEmoji = member.status === 'active' ? '🌟' : member.status === 'warning' ? '💕' : '😴';
+                        const statusEmoji = member.status === 'active' ? '🌟' : member.status === 'warning' ? '💕' : member.status === 'long_absent' ? '👻' : '😴';
                         return (
                         <TableRow key={member.id} className="border-b border-[#363e60] bg-[#252b43] even:bg-[#2a314d] hover:bg-[#303858] transition-colors">
                           <TableCell className="text-center font-bold sticky left-0 bg-[#252b43] z-10 border-r border-[#363e60] text-gray-100">
