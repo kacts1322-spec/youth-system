@@ -160,10 +160,12 @@ export async function saveWeeklyAttendanceAction(
       const diffDays = (todayDate.getTime() - createdDate.getTime()) / (1000 * 60 * 60 * 24);
       if (diffDays >= 365) newStatus = 'inactive';
       else if (diffDays >= 90) newStatus = 'long_absent';
+      else newStatus = 'active';
     } else {
       const diffDays = (todayDate.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24);
       if (diffDays >= 365) newStatus = 'inactive';
       else if (diffDays >= 90) newStatus = 'long_absent';
+      else newStatus = 'active';
     }
 
     // 3개월(90일) 이상 결석이 아니면, 최근 5주 기준으로 활동/확인 판별
