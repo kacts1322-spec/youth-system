@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { fetchMembersAction, addMemberAction, uploadExcelAction, updateMemberFieldAction } from './actions';
+import { fetchMembersAction, addMemberAction, uploadExcelAction, updateMemberFieldAction, deleteMemberAction } from './actions';
 import { toast } from 'sonner';
 
 const CELL_COLORS = [
@@ -79,7 +79,7 @@ function EditableCell({ value, onSave, type = "text", placeholder = "", options 
     return (
       <div 
         onClick={() => setIsEditing(true)} 
-        className="min-h-[24px] cursor-pointer hover:bg-[#363e60] p-1 rounded transition-colors"
+        className="min-h-[24px] cursor-pointer hover:bg-[#363e60] p-1 rounded transition-colors text-center"
       >
         {value || <span className="text-gray-600 italic">{placeholder || '클릭하여 입력'}</span>}
       </div>
@@ -145,11 +145,15 @@ export default function MembersPage() {
 
   // 정렬 및 그룹화 로직 적용
   const sortedMembers = [...(isPreviewMode ? previewMembers : members)].sort((a, b) => {
-    // 1순위: 이탈자(away)는 항상 맨 밑으로
-    const isAwayA = a.status === 'away';
-    const isAwayB = b.status === 'away';
-    if (isAwayA && !isAwayB) return 1;
-    if (!isAwayA && isAwayB) return -1;
+    // 1순위: 장기결석(long_absent)과 군/유학(away)은 밑으로 분리
+    const getStatusWeight = (status: string) => {
+      if (status === 'away') return 3;
+      if (status === 'long_absent') return 2;
+      return 1;
+    };
+    const weightA = getStatusWeight(a.status);
+    const weightB = getStatusWeight(b.status);
+    if (weightA !== weightB) return weightA - weightB;
 
     // 2순위: 선택한 정렬 기준
     if (sortBy === 'name') return (a.name || '').localeCompare(b.name || '');
@@ -162,7 +166,8 @@ export default function MembersPage() {
     return 0;
   });
 
-  // UI에서 이탈자 분리선을 긋기 위한 인덱스 찾기
+  // UI에서 분리선을 긋기 위한 인덱스 찾기
+  const firstLongAbsentIndex = sortedMembers.findIndex(m => m.status === 'long_absent');
   const firstAwayIndex = sortedMembers.findIndex(m => m.status === 'away');
 
   const handleUpdateField = async (id: string, field: string, value: any) => {
@@ -176,6 +181,19 @@ export default function MembersPage() {
       setMembers(originalMembers); // 롤백
     } else {
       toast.success('수정되었습니다.', { duration: 1500 });
+    }
+  };
+
+  const handleDelete = async (id: string, name: string) => {
+    if (!window.confirm(`${name} 님의 명단을 완전히 삭제하시겠습니까?\n주의: 관련 출석 기록 등도 함께 삭제될 수 있습니다.`)) return;
+    
+    toast('삭제 중입니다...');
+    const res = await deleteMemberAction(id);
+    if (res.success) {
+      toast.success('삭제되었습니다.');
+      setMembers(prev => prev.filter(m => m.id !== id));
+    } else {
+      toast.error('삭제 실패: ' + res.error);
     }
   };
 
@@ -378,11 +396,23 @@ export default function MembersPage() {
                 <TableRow><TableCell colSpan={10} className="text-center py-16 text-gray-600 font-bold text-lg">🫥 아직 등록된 청년이 없어요!</TableCell></TableRow>
               ) : (
                 sortedMembers.map((member, i) => {
+                  const isLongAbsentDivider = firstLongAbsentIndex !== -1 && i === firstLongAbsentIndex;
                   const isAwayDivider = firstAwayIndex !== -1 && i === firstAwayIndex;
                   // 상태별 이모지 매핑
                   const statusEmoji = member.status === 'active' ? '🌟' : member.status === 'warning' ? '💕' : member.status === 'long_absent' ? '👻' : member.status === 'away' ? '✈️' : '😴';
                   return (
                     <React.Fragment key={member.id || i}>
+                      {isLongAbsentDivider && (
+                        <TableRow className="border-0 hover:bg-transparent">
+                          <TableCell colSpan={10} className="p-4">
+                            <div className="flex items-center justify-center gap-3 bg-[#252b43] border border-[#363e60] rounded-full py-3 px-6 max-w-md mx-auto mt-4">
+                              <span className="text-xl">👻</span>
+                              <span className="font-extrabold text-gray-400 tracking-wider text-sm">장기결석 명단</span>
+                              <span className="text-xl">👻</span>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      )}
                       {isAwayDivider && (
                         <TableRow className="border-0 hover:bg-transparent">
                           <TableCell colSpan={10} className="p-4">
@@ -399,9 +429,14 @@ export default function MembersPage() {
                           {isPreviewMode ? member.name : (
                             <div className="flex items-center justify-center gap-2">
                               <EditableCell value={member.name} onSave={(val: any) => handleUpdateField(member.id, 'name', val)} />
-                              <Link href={`/members/${member.id}`} className="opacity-0 group-hover:opacity-100 transition-opacity">
-                                <span className="text-[10px] bg-cyan-500/20 text-cyan-400 px-1.5 py-0.5 rounded border border-cyan-500/50 cursor-pointer">프로필 ↗</span>
-                              </Link>
+                              <div className="flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity absolute right-2 top-1/2 -translate-y-1/2">
+                                <Link href={`/members/${member.id}`}>
+                                  <span className="text-[10px] bg-cyan-500/20 text-cyan-400 px-1.5 py-0.5 rounded border border-cyan-500/50 cursor-pointer block text-center">프로필</span>
+                                </Link>
+                                <button onClick={() => handleDelete(member.id, member.name)} className="text-[10px] bg-rose-500/20 text-rose-400 px-1.5 py-0.5 rounded border border-rose-500/50 cursor-pointer block text-center">
+                                  삭제
+                                </button>
+                              </div>
                             </div>
                           )}
                         </TableCell>

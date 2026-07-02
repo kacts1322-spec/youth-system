@@ -107,3 +107,12 @@ export async function updateMemberFieldAction(id: string, field: string, value: 
   revalidatePath('/members');
   return { success: true };
 }
+
+export async function deleteMemberAction(id: string) {
+  const { error } = await supabase.from('members').delete().eq('id', id);
+  if (error) {
+    return { success: false, error: error.message };
+  }
+  revalidatePath('/members');
+  return { success: true };
+}
