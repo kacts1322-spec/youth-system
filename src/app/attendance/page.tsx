@@ -147,7 +147,7 @@ export default function AttendancePage() {
       </div>
 
       <Card className="game-card overflow-hidden border-[#363e60]">
-        <div className="overflow-auto w-full max-h-[calc(100vh-280px)]">
+        <div className="overflow-auto w-full h-[65vh] md:h-[70vh]">
           <Table className="min-w-[600px] text-sm relative">
             <TableHeader className="bg-[#1e2235] sticky top-0 z-20 shadow-md">
               <TableRow className="border-b border-[#363e60]">
@@ -184,12 +184,13 @@ export default function AttendancePage() {
                 <TableRow><TableCell colSpan={6} className="text-center py-12 text-gray-600 font-medium">명단이 없습니다.</TableCell></TableRow>
               ) : (
                 (() => {
-                  const regularMembers = members.filter(m => m.status !== 'away');
+                  const activeMembers = members.filter(m => m.status !== 'away' && m.status !== 'long_absent' && m.status !== 'inactive');
+                  const inactiveMembers = members.filter(m => m.status === 'long_absent' || m.status === 'inactive');
                   const awayMembers = members.filter(m => m.status === 'away');
                   
                   return (
                     <>
-                      {regularMembers.map((member) => {
+                      {activeMembers.map((member) => {
                         // 상태별 이모지 (이름 옆에 1번만 표시)
                         const statusEmoji = member.status === 'active' ? '🌟' : member.status === 'warning' ? '💕' : member.status === 'long_absent' ? '👻' : '😴';
                         return (
@@ -211,6 +212,41 @@ export default function AttendancePage() {
                         </TableRow>
                         );
                       })}
+
+                      {inactiveMembers.length > 0 && (
+                        <>
+                          <TableRow className="border-0 hover:bg-transparent">
+                            <TableCell colSpan={6} className="p-4">
+                              <div className="flex items-center justify-center gap-3 bg-[#252b43] border border-[#363e60] rounded-full py-3 px-6 max-w-sm mx-auto">
+                                <span className="text-xl">👻</span>
+                                <span className="font-extrabold text-gray-400 tracking-wider text-sm">장기결석 및 비활동 명단</span>
+                                <span className="text-xl">👻</span>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                          {inactiveMembers.map((member) => {
+                            const statusEmoji = member.status === 'long_absent' ? '👻' : '😴';
+                            return (
+                              <TableRow key={member.id} className="border-b border-[#363e60] bg-[#252b43] even:bg-[#2a314d] hover:bg-[#303858] transition-colors opacity-80">
+                                <TableCell className="text-center font-bold sticky left-0 bg-[#252b43] z-10 border-r border-[#363e60] text-gray-400">
+                                  {member.name} <span className="text-sm">{statusEmoji}</span>
+                                </TableCell>
+                                {dates.map(date => {
+                                  const isChecked = attendanceMap[member.id]?.[date] || false;
+                                  const isToday = date === dates[dates.length - 1];
+                                  return (
+                                    <TableCell key={date} className={`text-center cursor-pointer p-0 border-r border-[#363e60] last:border-r-0 ${isToday ? 'bg-cyan-500/5' : ''}`} onClick={() => handleToggle(member.id, date)}>
+                                      <div className={`w-full h-12 flex items-center justify-center transition-all duration-200 ${isChecked ? 'bg-emerald-500/15' : 'hover:bg-[#303858]'}`}>
+                                        <span className={`text-xl select-none ${isChecked ? 'scale-110' : ''}`}>{isChecked ? '✅' : '⬜'}</span>
+                                      </div>
+                                    </TableCell>
+                                  );
+                                })}
+                              </TableRow>
+                            );
+                          })}
+                        </>
+                      )}
 
                       {awayMembers.length > 0 && (
                         <>
