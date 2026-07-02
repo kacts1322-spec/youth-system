@@ -107,14 +107,27 @@ export async function saveWeeklyAttendanceAction(
 
   const existingLookup = new Map((existing || []).map(r => [`${r.member_id}_${r.service_date}`, r.id]));
 
-  const finalUpsert = upsertData.map(row => {
+  const toInsert: any[] = [];
+  const toUpdate: any[] = [];
+
+  upsertData.forEach(row => {
     const existingId = existingLookup.get(`${row.member_id}_${row.service_date}`);
-    if (existingId) return { ...row, id: existingId };
-    return row;
+    if (existingId) {
+      toUpdate.push({ ...row, id: existingId });
+    } else {
+      toInsert.push(row);
+    }
   });
 
-  const { error } = await supabase.from('attendance').upsert(finalUpsert);
-  if (error) return { success: false, error: error.message };
+  if (toInsert.length > 0) {
+    const { error: insertErr } = await supabase.from('attendance').insert(toInsert);
+    if (insertErr) return { success: false, error: '새 출석 기록 저장 실패: ' + insertErr.message };
+  }
+
+  if (toUpdate.length > 0) {
+    const { error: updateErr } = await supabase.from('attendance').upsert(toUpdate);
+    if (updateErr) return { success: false, error: '기존 출석 기록 수정 실패: ' + updateErr.message };
+  }
 
   // --- 추가된 로직: 5주 기준 상태 자동 업데이트 ---
   const { data: currentMembers } = await supabase.from('members').select('id, status');
