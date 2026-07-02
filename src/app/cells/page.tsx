@@ -12,8 +12,25 @@ import { fetchCellsBySemesterAction, createCellAction, deleteCellAction } from '
 import { fetchMembersAction } from '../members/actions';
 import { toast } from 'sonner';
 
+const getCurrentSemester = () => {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth() + 1;
+  return `${year}-${month <= 6 ? '상반기' : '하반기'}`;
+};
+
+const getRecentSemesters = () => {
+  const year = new Date().getFullYear();
+  return [
+    `${year - 1}-하반기`,
+    `${year}-상반기`,
+    `${year}-하반기`,
+    `${year + 1}-상반기`,
+  ];
+};
+
 export default function CellsPage() {
-  const [semester, setSemester] = useState('2026-상반기');
+  const [semester, setSemester] = useState(getCurrentSemester());
   const [cells, setCells] = useState<any[]>([]);
   const [members, setMembers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -64,7 +81,7 @@ export default function CellsPage() {
     <div className="p-4 max-w-[1200px] mx-auto space-y-6 pb-20">
       <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 game-header rounded-2xl p-4">
         <div>
-          <h1 className="text-2xl font-extrabold text-neon-cyan">🫂 학기별 셀 편성</h1>
+          <h1 className="text-2xl font-extrabold text-neon-cyan">🫂 셀 편성 현황</h1>
           <p className="text-sm text-gray-500 font-medium mt-1">
             소그룹을 만들고 리더와 셀원을 배정해보세요!
           </p>
@@ -75,9 +92,9 @@ export default function CellsPage() {
               <SelectValue placeholder="학기 선택" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="2025-하반기">2025-하반기</SelectItem>
-              <SelectItem value="2026-상반기">2026-상반기</SelectItem>
-              <SelectItem value="2026-하반기">2026-하반기</SelectItem>
+              {getRecentSemesters().map(sem => (
+                <SelectItem key={sem} value={sem}>{sem}</SelectItem>
+              ))}
             </SelectContent>
           </Select>
           <Link href="/dashboard">
