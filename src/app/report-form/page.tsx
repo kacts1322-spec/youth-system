@@ -11,6 +11,13 @@ import { toast } from 'sonner';
 import { submitReportAction, verifyLeaderPasswordAction } from '../reports/actions';
 import { fetchCellsBySemesterAction, fetchCellDetailsAction } from '../cells/actions';
 
+const getCurrentSemester = () => {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth() + 1;
+  return `${year}-${month <= 6 ? '상반기' : '하반기'}`;
+};
+
 export default function ReportFormPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [password, setPassword] = useState('');
@@ -23,13 +30,17 @@ export default function ReportFormPage() {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   
-  const currentSemester = '2026-상반기';
+  const [currentSemester, setCurrentSemester] = useState('');
 
   useEffect(() => {
-    if (isAuthenticated) {
+    setCurrentSemester(getCurrentSemester());
+  }, []);
+
+  useEffect(() => {
+    if (isAuthenticated && currentSemester) {
       loadCells();
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, currentSemester]);
 
   useEffect(() => {
     if (selectedCellId) {
