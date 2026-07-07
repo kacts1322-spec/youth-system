@@ -19,9 +19,6 @@ const getCurrentSemester = () => {
 };
 
 export default function ReportFormPage() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [password, setPassword] = useState('');
-  
   const [cells, setCells] = useState<any[]>([]);
   const [selectedCellId, setSelectedCellId] = useState<string>('');
   const [cellMembers, setCellMembers] = useState<any[]>([]);
@@ -37,10 +34,10 @@ export default function ReportFormPage() {
   }, []);
 
   useEffect(() => {
-    if (isAuthenticated && currentSemester) {
+    if (currentSemester) {
       loadCells();
     }
-  }, [isAuthenticated, currentSemester]);
+  }, [currentSemester]);
 
   useEffect(() => {
     if (selectedCellId) {
@@ -77,17 +74,6 @@ export default function ReportFormPage() {
     }
   };
 
-  const handleAuth = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const isValid = await verifyLeaderPasswordAction(password);
-    if (isValid) {
-      setIsAuthenticated(true);
-      toast.success('인증되었습니다.');
-    } else {
-      toast.error('비밀번호가 틀렸습니다.');
-    }
-  };
-
   const toggleMemberCheck = (memberId: string) => {
     setCheckedMembers(prev => ({
       ...prev,
@@ -119,31 +105,6 @@ export default function ReportFormPage() {
     }
     setSubmitting(false);
   };
-
-  if (!isAuthenticated) {
-    return (
-      <div className="min-h-screen flex items-center justify-center p-4">
-        <Card className="game-card w-full max-w-sm">
-          <CardHeader>
-            <CardTitle className="text-xl font-bold text-neon-cyan">🔒 리더 인증</CardTitle>
-            <CardDescription className="text-gray-400">보고서를 작성하려면 비밀번호를 입력해주세요.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleAuth} className="space-y-4">
-              <Input 
-                type="password" 
-                placeholder="비밀번호" 
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="bg-[#0d0f1a] border-[#2a2d3e] text-gray-100"
-              />
-              <Button type="submit" className="w-full bg-gradient-to-r from-cyan-500 to-blue-600">접속하기</Button>
-            </form>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
 
   if (submitted) {
     return (
